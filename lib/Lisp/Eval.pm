@@ -12,6 +12,26 @@ sub tokenize {
     @tokens = shift =~ /\(|\)|[^\s\(\)]+/xg;
 }
 
+sub l_swallow {
+    my $t = shift @tokens;
+    #just value
+    if ($t ne '(') {
+        return;
+    }
+
+    my $n = 1;
+    while ($n > 0) {
+        $t = shift @tokens;
+        if ($t eq '(') {
+            $n ++;
+        }
+
+        if ($t eq ')') {
+            $n --;
+        }
+    }
+}
+
 sub l_match {
     my $m = shift;
     die "$m not match" unless $tokens[0] eq $m;
@@ -22,31 +42,46 @@ sub l_apply {
     my ($op, @args) = @_;
     $op =~ /^[\+\-\*\/]$/ ? do {
         return eval ''.join ' '.$op.' ', @args;
-    } :
-    $op eq 'define' ? do {
-        e_put $args[0], $args[1];
-        return;
     } : die;
 }
 
 sub l_eval {
-    $tokens[0] ne '(' ? return e_val(shift @tokens) :
-    do {
-        l_match '(';
-        my $op = shift @tokens;
-        my @args;
+    return e_val(shift @tokens) if $tokens[0] ne '(';
 
-        #define first param should not be evaled
-        if ($op eq 'define') {
-            push @args, shift @tokens;
+    l_match '(';
+    my $op = shift @tokens;
+
+    #if
+    if ($op eq 'if') {
+        my $x = l_eval();
+        my $r;
+        if ($x) {
+            $r = l_eval();
+            l_swallow();
         }
-
-        while ($tokens[0] ne ')') {
-            push @args, l_eval();
+        else {
+            l_swallow();
+            $r = l_eval();
         }
         l_match ')';
-        return l_apply $op, @args;
-    };
+        return $r;
+    }
+
+    #define
+    #first param should not be evaled
+    if ($op eq 'define') {
+        e_put((shift @tokens), l_eval());
+        l_match ')';
+        return;
+    }
+
+    #apply func
+    my @args;
+    while ($tokens[0] ne ')') {
+        push @args, l_eval();
+    }
+    l_match ')';
+    return l_apply $op, @args;
 }
 
 sub e {

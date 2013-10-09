@@ -14,6 +14,7 @@ sub e_val {
     return $sb unless $sb =~ /^[a-zA-Z_]/;
 
     #symbol
-    $ENV{$sb} or die "no symbol $sb exists, current symbols: " ,keys %ENV;
+    $ENV{$sb} or die "no symbol $sb exists, current symbols: " ,join ', ', %ENV;
+    #exists $ENV{$sb} ? $ENV{$sb} : die "no symbol $sb exists, current symbols: " ,join ', ', keys %ENV;
 }
 1;
