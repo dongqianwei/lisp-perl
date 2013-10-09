@@ -2,6 +2,7 @@ package Lisp::Eval;
 use Lisp::Env;
 use parent Exporter;
 use subs qw[l_eval];
+$|++;
 
 use v5.16;
 
@@ -42,6 +43,9 @@ sub l_apply {
     my ($op, @args) = @_;
     $op =~ /^[\+\-\*\/]$/ ? do {
         return eval ''.join ' '.$op.' ', @args;
+    } :
+    $op =~ 'puts' ? do {
+        say "@args";
     } : die;
 }
 
@@ -49,6 +53,7 @@ sub l_eval {
     return e_val(shift @tokens) if $tokens[0] ne '(';
 
     l_match '(';
+    e_push();
     my $op = shift @tokens;
 
     #if
@@ -64,12 +69,14 @@ sub l_eval {
             $r = l_eval();
         }
         l_match ')';
+        e_pop();
         return $r;
     }
 
     #define
     #first param should not be evaled
     if ($op eq 'define') {
+        e_pop();
         e_put((shift @tokens), l_eval());
         l_match ')';
         return;
@@ -81,12 +88,14 @@ sub l_eval {
         push @args, l_eval();
     }
     l_match ')';
+    e_pop();
     return l_apply $op, @args;
 }
 
 sub e {
     while (@tokens) {
-        say if local $_ = &l_eval;
+        print ".";
+        l_eval();
     }
 }
 
