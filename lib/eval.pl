@@ -9,6 +9,9 @@ my $code = <<C;
     (puts (if a 2 3))
     (puts (define a 233) a)
     (puts a)
+
+    (define (add x y)(+ x y))
+    (puts (add 123 321))
 C
 
 tokenize $code;

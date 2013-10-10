@@ -1,5 +1,6 @@
 package Lisp::Eval;
 use Lisp::Env;
+use Lisp::Func;
 use parent Exporter;
 use subs qw[l_eval];
 $|++;
@@ -17,9 +18,10 @@ sub l_swallow {
     my $t = shift @tokens;
     #just value
     if ($t ne '(') {
-        return;
+        return $t;
     }
 
+    my @res = '(';
     my $n = 1;
     while ($n > 0) {
         $t = shift @tokens;
@@ -30,7 +32,10 @@ sub l_swallow {
         if ($t eq ')') {
             $n --;
         }
+
+        push @res, $t;
     }
+    return @res;
 }
 
 sub l_match {
@@ -77,7 +82,32 @@ sub l_eval {
     #first param should not be evaled
     if ($op eq 'define') {
         e_pop();
-        e_put((shift @tokens), l_eval());
+
+        if ($tokens[0] ne '(') {
+            e_put((shift @tokens), l_eval());
+        }
+        #match function defination
+        else {
+            l_match '(';
+            #get function name
+            my $funame = shift @tokens;
+            #get args
+            my @args;
+            do{push @args, l_swallow()} until $tokens[0] eq ')';
+            my @states;
+            l_match ')';
+            #get stetements
+            while ($tokens[0] ne ')') {
+                unshift @states, l_swallow;
+            }
+            my $func = Lisp::Func->new(
+                                       name => $funame,
+                                       env => e_env(),
+                                       args => \@args,
+                                       states => \@states,
+                                       );
+        }
+
         l_match ')';
         return;
     }
