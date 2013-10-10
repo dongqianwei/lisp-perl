@@ -141,7 +141,7 @@ sub e {
     while (@tokens) {
         @res = l_eval();
     }
-    say @res;
+    @res;
 }
 
 1;

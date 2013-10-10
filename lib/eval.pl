@@ -11,6 +11,7 @@ my $code = <<C;
     (puts a)
     (define (add x y)(+ x y))
     (puts (add 123 321))
+    (puts (+ a b))
 C
 
 tokenize $code;
