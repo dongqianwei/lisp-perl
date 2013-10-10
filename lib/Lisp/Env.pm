@@ -1,7 +1,7 @@
 package Lisp::Env;
 use subs qw[e_push e_pop e_val e_put];
 use parent Exporter;
-our @EXPORT = qw[e_val e_put e_push e_pop e_env];
+our @EXPORT = qw[e_val e_put e_push e_pop e_env e_set_env];
 my %ENV;
 
 my $cur_env = \%ENV;
@@ -14,6 +14,11 @@ sub e_push {
 
 sub e_env {
     $cur_env;
+}
+
+#set current env
+sub e_set_env {
+    $cur_env = shift;
 }
 
 sub e_pop {
@@ -32,7 +37,7 @@ sub e_val {
     #symbol
     my $env = $cur_env;
     until (exists $env->{$sb}) {
-        $env = $env->{_parent} or die 'no more env';
+        $env = $env->{_parent} or die "search for symbol: $sb ;no more env";
     }
     $env->{$sb};
 }

@@ -1,17 +1,26 @@
 package Lisp::Eval;
+use v5.16;
 use Lisp::Env;
+use parent 'Exporter';
 use Lisp::Func;
-use parent Exporter;
 use subs qw[l_eval];
 $|++;
 
-use v5.16;
-
-our @EXPORT = qw[e tokenize];
+BEGIN {
+    our @EXPORT = qw(e tokenize get_tokens set_tokens);
+};
 
 my @tokens;
 sub tokenize {
     @tokens = shift =~ /\(|\)|[^\s\(\)]+/xg;
+}
+
+sub set_tokens {
+    @tokens = @_;
+}
+
+sub get_tokens {
+    @tokens;
 }
 
 sub l_swallow {
@@ -51,7 +60,11 @@ sub l_apply {
     } :
     $op =~ 'puts' ? do {
         say "@args";
-    } : die;
+    } :
+    get_func($op) ? do {
+        my $func = get_func($op);
+        return $func->f_eval(@args);
+    } : die "operator not exist: $op";
 }
 
 sub l_eval {
@@ -100,12 +113,13 @@ sub l_eval {
             while ($tokens[0] ne ')') {
                 unshift @states, l_swallow;
             }
-            my $func = Lisp::Func->new(
-                                       name => $funame,
-                                       env => e_env(),
-                                       args => \@args,
-                                       states => \@states,
-                                       );
+            Lisp::Func->register(
+                                name => $funame,
+                                env => e_env(),
+                                args => \@args,
+                                states => \@states,
+                                );
+
         }
 
         l_match ')';
@@ -123,10 +137,11 @@ sub l_eval {
 }
 
 sub e {
+    my @res;
     while (@tokens) {
-        print ".";
-        l_eval();
+        @res = l_eval();
     }
+    say @res;
 }
 
 1;
