@@ -58,6 +58,9 @@ sub l_apply {
     $op =~ /^[\+\-\*\/]$/ ? do {
         return eval ''.join ' '.$op.' ', @args;
     } :
+    $op =~ /^[<=>]$/ ? do {
+        return eval $args[0]. ' '.($op eq '=' ? '==' : $op).' '. $args[1];
+    } :
     $op =~ 'puts' ? do {
         say "@args";
     } :
@@ -77,18 +80,18 @@ sub l_eval {
     #if
     if ($op eq 'if') {
         my $x = l_eval();
-        my $r;
+        my @r;
         if ($x) {
-            $r = l_eval();
+            @r = l_eval();
             l_swallow();
         }
         else {
             l_swallow();
-            $r = l_eval();
+            @r = l_eval();
         }
         l_match ')';
         e_pop();
-        return $r;
+        return @r;
     }
 
     #define

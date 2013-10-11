@@ -13,6 +13,13 @@ my $code = <<C;
     (puts (add 123 321))
     (puts (+ a b))
     (puts (define (add x) (+ 100 x)) (add 20))
+    (puts (if (> 2 1) 2 1))
+    (puts (if (< 2 1) 2 1))
+    (define (sum s r)
+        (if (= s 0)
+            r
+            (sum (- s 1) (+ r s))))
+    (puts (sum 100 0))
 C
 
 tokenize $code;
