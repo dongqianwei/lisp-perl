@@ -2,7 +2,6 @@ package Lisp::Eval;
 use v5.16;
 use Lisp::Env;
 use parent 'Exporter';
-use Lisp::Func;
 use subs qw[l_eval];
 $|++;
 
@@ -10,6 +9,7 @@ BEGIN {
     our @EXPORT = qw(e tokenize get_tokens set_tokens);
 };
 
+use Lisp::Func;
 my @tokens;
 sub tokenize {
     @tokens = shift =~ /\(|\)|[^\s\(\)]+/xg;

@@ -5,16 +5,14 @@ use Data::Dump 'dump';
 use parent 'Exporter';
 our @EXPORT = qw[get_func];
 
-my %f_map;
-
 sub register {
     my $class = shift;
     my %func = (name => '', env => {}, args => [], states => [], @_);
-    $f_map{$func{name}} = bless \%func, $class;
+    e_put($func{name}, bless \%func, $class);
 }
 
 sub get_func {
-    $f_map{+shift};
+    e_val(+shift);
 }
 
 sub f_eval {
@@ -28,12 +26,12 @@ sub f_eval {
         e_put($sb, shift @args);
     }
 
-    my @save_tokens = Lisp::Eval::get_tokens();
-    Lisp::Eval::set_tokens(@{$func->{states}});
+    my @save_tokens = get_tokens();
+    set_tokens(@{$func->{states}});
 
     my @res = Lisp::Eval::e();
 
-    Lisp::Eval::set_tokens(@save_tokens);
+    set_tokens(@save_tokens);
     e_set_env $save_env;
 
     @res;
