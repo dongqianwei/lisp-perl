@@ -22,10 +22,7 @@ my $code = <<C;
     (puts (sum 100 0))
 C
 
-tokenize $code;
-
-&e;
-
+execute $code;
 print "execute end";
 
 __END__

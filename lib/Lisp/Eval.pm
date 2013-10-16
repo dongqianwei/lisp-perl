@@ -6,7 +6,7 @@ use subs qw[l_eval];
 $|++;
 
 BEGIN {
-    our @EXPORT = qw(e tokenize get_tokens set_tokens);
+    our @EXPORT = qw(e execute tokenize get_tokens set_tokens);
 };
 
 use Lisp::Func;
@@ -61,8 +61,17 @@ sub l_apply {
     $op =~ /^[<=>]$/ ? do {
         return eval $args[0]. ' '.($op eq '=' ? '==' : $op).' '. $args[1];
     } :
-    $op =~ 'puts' ? do {
+    $op eq 'puts' ? do {
         say "@args";
+    } :
+    $op eq 'list' ? do {
+        [@args];
+    } :
+    $op eq 'car' ? do {
+        $args[0]->[0];
+    } :
+    $op eq 'cdr' ? do {
+        [@{$args[0]}[1 .. ($#{$args[0]})]];
     } :
     get_func($op) ? do {
         my $func = get_func($op);
@@ -109,12 +118,12 @@ sub l_eval {
             my $funame = shift @tokens;
             #get args
             my @args;
-            do{push @args, l_swallow()} until $tokens[0] eq ')';
+            while ($tokens[0] ne ')'){push @args, l_swallow()};
             my @states;
             l_match ')';
             #get stetements
             while ($tokens[0] ne ')') {
-                unshift @states, l_swallow;
+                push @states, l_swallow;
             }
             Lisp::Func->register(
                                 name => $funame,
@@ -122,7 +131,6 @@ sub l_eval {
                                 args => \@args,
                                 states => \@states,
                                 );
-
         }
 
         l_match ')';
@@ -139,12 +147,20 @@ sub l_eval {
     return l_apply $op, @args;
 }
 
+#inner execute
 sub e {
     my @res;
     while (@tokens) {
         @res = l_eval();
     }
     @res;
+}
+
+sub execute {
+    my $code = shift;
+    @tokens = tokenize $code;
+    my @res = e;
+    wantarray ? @res : $res[0];
 }
 
 1;
