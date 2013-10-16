@@ -125,6 +125,7 @@ sub l_eval {
     #define
     #first param should not be evaled
     if ($op eq 'define') {
+        #symbol will be saved in surrending scope
         e_pop();
 
         if ($tokens[0] ne '(') {
@@ -144,17 +145,39 @@ sub l_eval {
             while ($tokens[0] ne ')') {
                 push @states, l_swallow;
             }
-            Lisp::Func->register(
-                                name => $funame,
-                                env => e_env(),
-                                args => \@args,
-                                states => \@states,
-                                );
+            Lisp::Func->new(
+                            name => $funame,
+                            env => e_env(),
+                            args => \@args,
+                            states => \@states,
+                            )->register;
         }
 
         l_match ')';
         return;
     }
+
+    # lambda expression: construct Func
+    if ($op eq 'lambda') {
+        l_match '(';
+        my @args;
+        while ($tokens[0] ne ')'){push @args, l_swallow()};
+        my @states;
+        l_match ')';
+        #get stetements
+        while ($tokens[0] ne ')') {
+            push @states, l_swallow;
+        }
+        my $fun = Lisp::Func->new(
+                        env => e_env(),
+                        args => \@args,
+                        states => \@states,
+                        );
+        l_match ')';
+        e_pop();
+        return $fun;
+    }
+
 
     #********************function name symbol********************#
     #apply func

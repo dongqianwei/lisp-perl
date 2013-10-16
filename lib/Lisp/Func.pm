@@ -6,9 +6,15 @@ use parent 'Exporter';
 our @EXPORT = qw[get_func];
 
 sub register {
+    my $func = shift;
+    e_put($func->{name}, $func);
+}
+
+sub new {
     my $class = shift;
     my %func = (name => '', env => {}, args => [], states => [], @_);
-    e_put($func{name}, bless \%func, $class);
+    bless \%func, $class;
+    \%func;
 }
 
 sub get_func {

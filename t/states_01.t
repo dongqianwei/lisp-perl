@@ -9,7 +9,6 @@ sub ts {
     execute $code;
 }
 
-
 $code = <<'.';
 123
 .
@@ -23,16 +22,10 @@ $code = <<'.';
 is(ts, 3, 'add');
 
 $code = <<'.';
-(+ 1 2)
-.
-
-is(ts, 3, 'minus');
-
-$code = <<'.';
 (- 1 2)
 .
 
-is(ts, -1, 'add');
+is(ts, -1, 'minus');
 
 $code = <<'.';
 (* 3 2)
@@ -137,5 +130,18 @@ $code = <<'.';
 .
 
 is(ts, 34, 'high order function map');
+
+$code = <<'.';
+(define add (lambda (x y)(+ x y)))
+(add 1 2)
+.
+
+is(ts, 3, 'lambda expression 1');
+
+$code = <<'.';
+((lambda (x y) (+ x y)) 1 2)
+.
+
+is(ts, 3, 'lambda expression 2');
 
 done_testing();
