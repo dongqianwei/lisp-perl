@@ -74,6 +74,12 @@ sub l_apply {
     $op eq 'cdr' ? do {
         [@{$args[0]}[1 .. ($#{$args[0]})]];
     } :
+    $op eq 'cons' ? do {
+        [$args[0], @{$args[1]}];
+    } :
+    $op eq 'null?' ? do {
+        @{$args[0]} == 0;
+    } :
     get_func($op) ? do {
         my $func = get_func($op);
         return $func->f_eval(@args);

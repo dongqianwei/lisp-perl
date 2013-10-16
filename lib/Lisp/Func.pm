@@ -23,6 +23,8 @@ sub f_eval {
     my $cur_env = $func->{env};
     e_set_env $cur_env;
 
+    e_push;
+
     #set env
     for my $sb (@{$func->{args}}) {
         e_put($sb, shift @args);
@@ -32,6 +34,8 @@ sub f_eval {
     set_tokens(@{$func->{states}});
 
     my @res = Lisp::Eval::e();
+
+    e_pop;
 
     set_tokens(@save_tokens);
     e_set_env $save_env;
