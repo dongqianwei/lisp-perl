@@ -84,4 +84,11 @@ $code = <<'.';
 
 is(ts, 2, 'list function');
 
+$code = <<'.';
+(define (add x y) (+ x y))
+((car (list add)) 1 2)
+.
+
+is(ts, 3, 'operator evaled');
+
 done_testing();

@@ -12,7 +12,9 @@ sub register {
 }
 
 sub get_func {
-    e_val(+shift);
+    my $fun = shift;
+    return $fun if ref $fun eq 'Lisp::Func';
+    e_val($fun);
 }
 
 sub f_eval {

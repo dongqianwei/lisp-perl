@@ -55,6 +55,7 @@ sub l_match {
 
 sub l_apply {
     my ($op, @args) = @_;
+
     $op =~ /^[\+\-\*\/]$/ ? do {
         return eval ''.join ' '.$op.' ', @args;
     } :
@@ -84,7 +85,19 @@ sub l_eval {
 
     l_match '(';
     e_push();
-    my $op = shift @tokens;
+
+    # $op is a symbol
+    # it could be function name or syntax symbol
+    my $op;
+    if ($tokens[0] ne '(') {
+        $op = shift @tokens;
+    }
+    #$op will be evaled
+    else {
+        $op = l_eval;
+    }
+
+    #********************syntax symbol********************#
 
     #if
     if ($op eq 'if') {
@@ -137,6 +150,7 @@ sub l_eval {
         return;
     }
 
+    #********************function name symbol********************#
     #apply func
     my @args;
     while ($tokens[0] ne ')') {
